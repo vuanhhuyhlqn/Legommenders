@@ -98,7 +98,12 @@ class ConfigInit(abc.ABC):
         config = io.file_load(f'.{cls.classname()}')  # Load the configuration file content
 
         for line in config.strip().split('\n'):  # Process each line in the configuration file
-            key, value = line.split('=')
+            line = line.strip()
+            # Skip blank lines, comments, and any line without a key=value pair
+            # (so `.data` files copied from `.data.example` with comments work).
+            if not line or line.startswith('#') or '=' not in line:
+                continue
+            key, value = line.split('=', 1)  # split only on the first '='
             cls._d[key.strip().lower()] = cast(str, value).strip()  # Store key-value pairs in lowercase
 
         return cls._d
