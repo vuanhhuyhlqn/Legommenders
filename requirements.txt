@@ -1,11 +1,11 @@
-torch~=2.0.1
+torch>=2.2
 smartdict==0.2.1
-pandas~=1.4.4
-scikit-learn~=1.5.1
+pandas>=2.0
+scikit-learn>=1.5
 termcolor~=3.3
 refconfig~=0.1
 oba~=0.3
-numpy~=1.23.2
+numpy>=1.26,<2.0
 unitok~=4.4
 transformers~=4.47.1
 tqdm~=4.67.1
