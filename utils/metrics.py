@@ -18,6 +18,7 @@ and instead keeps the evaluation logic self-contained and customisable.
 """
 
 import warnings
+import os
 from collections import OrderedDict
 from multiprocessing import Pool
 from typing import Dict, Union, List, Sequence, Any
@@ -315,7 +316,7 @@ class MetricPool:
         scores: Sequence[float],
         labels: Sequence[int],
         groups: Sequence[Any],
-        group_worker: int = 5,
+        group_worker: int = None,
     ) -> Dict[str, float]:
         """
         Parameters
@@ -324,12 +325,17 @@ class MetricPool:
         labels  : ground-truth binary labels (0 / 1).
         groups  : group identifier for each sample (e.g. user_id).
         group_worker : number of parallel processes for per-group evaluation.
+            If ``None`` it is read from the ``LEGO_GROUP_WORKER`` env var
+            (default 5). A value ``<= 1`` runs serially (no process pool),
+            which uses far less memory on constrained machines.
 
         Returns
         -------
         OrderedDict(str -> float)
             Final scalar metric values.
         """
+        if group_worker is None:
+            group_worker = int(os.environ.get("LEGO_GROUP_WORKER", 5))
         if not self.metrics:
             return {}
 
@@ -349,20 +355,27 @@ class MetricPool:
                 self.values[str(metric)] = metric(scores=scores, labels=labels)
                 continue
 
-            # Group-wise metric – compute per group then average
-            tasks = []
-            pool = Pool(processes=group_worker)
+            # Group-wise metric – compute per group then average.
+            if group_worker <= 1:
+                # Serial path: no process pool (lowest memory footprint).
+                values = [
+                    metric(g[1].scores.tolist(), g[1].labels.tolist())
+                    for g in group_df
+                ]
+            else:
+                tasks = []
+                pool = Pool(processes=group_worker)
 
-            for g in group_df:
-                group = g[1]                         # (group_id, group_dataframe)
-                g_labels = group.labels.tolist()
-                g_scores = group.scores.tolist()
-                tasks.append(pool.apply_async(metric, args=(g_scores, g_labels)))
+                for g in group_df:
+                    group = g[1]                     # (group_id, group_dataframe)
+                    g_labels = group.labels.tolist()
+                    g_scores = group.scores.tolist()
+                    tasks.append(pool.apply_async(metric, args=(g_scores, g_labels)))
 
-            pool.close()
-            pool.join()
+                pool.close()
+                pool.join()
 
-            values = [t.get() for t in tasks]
+                values = [t.get() for t in tasks]
             # Convert to tensor for convenient mean() then back to Python float
             self.values[str(metric)] = torch.tensor(values, dtype=torch.float).mean().item()
 

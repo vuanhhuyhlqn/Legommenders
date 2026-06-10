@@ -1,0 +1,25 @@
+# Template for the (gitignored) `.data` file.
+#
+# `.data` maps a dataset NAME to either:
+#   (a) a local path to the *raw* data directory, or
+#   (b) an `hf://<repo_id>` entry to auto-download the raw data from a
+#       HuggingFace *dataset* repo on first use (great for SSH remotes).
+#
+# Copy this file to `.data` and edit for the current machine:
+#     cp .data.example .data
+#
+# For MIND-style datasets the raw directory (local or downloaded) must contain
+# `train/` and `dev/` sub-folders, each with `behaviors.tsv` and `news.tsv`.
+# `<name>` links to `class <Name>Processor` in `processor/*.py`
+# (e.g. `mindimp` -> `MindImpProcessor`, the original split, impression-grouped).
+#
+# hf:// downloads need a HuggingFace token for private repos. It is read from
+# (in order): --hf_token, the HF_TOKEN / HUGGINGFACE_TOKEN env vars, a local
+# `.env` file, or ../rec/.env. Downloaded data lands in data/raw/<name>/.
+
+# --- local path examples ---
+# mind = /path/to/MINDsmall
+# mindtiny = /path/to/MINDsmall
+
+# --- auto-download from the HuggingFace Hub ---
+mindimp = hf://huyva/mind-small

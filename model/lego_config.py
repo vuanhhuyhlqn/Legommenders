@@ -92,7 +92,7 @@ class LegoConfig:
         use_item_content: bool = True,
         use_fast_eval: bool = True,
         item_page_size: int = 0,
-        cache_page_size: int = 512,
+        cache_page_size: int = 4,
         **kwargs,
     ):
         # -------- global network dimensions / flags -------- #

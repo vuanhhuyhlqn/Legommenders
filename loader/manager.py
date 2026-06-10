@@ -60,6 +60,8 @@ from __future__ import annotations
 
 from typing import Type, Optional
 
+import os
+
 from pigmento import pnt
 from torch.utils.data import DataLoader
 from unitok import Symbol
@@ -372,12 +374,17 @@ class Manager:
     # DataLoader helpers                                                 #
     # ------------------------------------------------------------------ #
     def _get_loader(self, mode: Symbol):
+        # ``num_workers`` is tunable via the LEGO_NUM_WORKERS env var so the
+        # same code runs on machines with very different RAM/CPU budgets
+        # (e.g. set LEGO_NUM_WORKERS=0 on a small box to avoid fork-OOM, or
+        # raise it on a big remote). Defaults to 5 to preserve old behaviour.
+        num_workers = int(os.environ.get("LEGO_NUM_WORKERS", 5))
         return DataLoader(
             dataset=self.inter_sets[mode],
             shuffle=mode is Symbols.train,
             batch_size=self.exp.policy.batch_size,
             pin_memory=self.exp.policy.pin_memory,
-            num_workers=5,
+            num_workers=num_workers,
         )
 
     # Shortcuts

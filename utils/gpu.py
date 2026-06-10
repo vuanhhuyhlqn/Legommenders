@@ -10,7 +10,7 @@ class GPU:
             return float(v.upper().strip().replace('MIB', '').replace('W', ''))
 
         def processor(k, v):
-            return (int(to_number(v)) if 'Not Support' not in v else 1) if k in params else v.strip()
+            return (int(to_number(v)) if 'Not Support' not in v and '[N/A]' not in v else 1) if k in params else v.strip()
 
         params = ['memory.free', 'memory.total', 'power.draw', 'power.limit']
         return {k: processor(k, v) for k, v in zip(args, line.strip().split(','))}

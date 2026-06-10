@@ -33,6 +33,7 @@ from loader.class_hub import ClassHub
 from processor.base_processor import BaseProcessor
 from utils import function
 from utils.config_init import CommandInit, DataInit
+from utils.hf_data import ensure_raw_data
 
 
 # ---------------------------------------------------------------------- #
@@ -87,12 +88,22 @@ if __name__ == '__main__':
             regenerate=False,      # force re-processing even if cache exists
             tokenizer=None,        # which tokenizer to use for the item field
             vocab=None,            # vocabulary path needed by most tokenizers
+            hf_token=None,         # optional explicit HuggingFace token
+            download_dir=None,     # where hf:// raw data is downloaded to
         )
     ).parse()
 
     # -------- Processor bootstrap ------------------------------------- #
     processor_class = get_processor(args.data)
-    data_dir = DataInit.get(args.data)       # maps dataset name -> local folder
+    # Maps dataset name -> local folder, or an `hf://<repo_id>` entry.
+    data_dir = DataInit.get(args.data, default=None)
+    # Resolve / auto-download the raw data (no-op for a present local path).
+    data_dir = ensure_raw_data(
+        name=args.data,
+        local_dir=data_dir,
+        token=args.hf_token,
+        download_dir=args.download_dir,
+    )
     args.seed = int(args.seed or 2023)
     function.seeding(args.seed)
 

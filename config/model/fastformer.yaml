@@ -1,5 +1,5 @@
 $$import:
-  - common/operator/item-fastformer.yaml
-  - common/operator/user-fastformer.yaml
-  - common/predictor/dot.yaml
+  - common/operators/item-fastformer.yaml
+  - common/operators/user-fastformer.yaml
+  - common/predictors/dot.yaml
 name: Fastformer

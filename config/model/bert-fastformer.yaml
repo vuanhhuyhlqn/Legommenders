@@ -3,3 +3,4 @@ $$import:
   - common/operators/user-fastformer.yaml
   - common/predictors/dot.yaml
 name: BERT-Fastformer
+cache_page_size: ${cache_page_size:4}
